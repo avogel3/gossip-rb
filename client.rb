@@ -7,7 +7,7 @@ PORT, PEER_PORT = ARGV.first(2)
 set :port, PORT
 
 $messages = {}
-$messages[PORT] = nil
+$messages[PORT] = []
 
 every(seconds: 10) do
   gossip_to_peers($messages)
@@ -18,14 +18,13 @@ end
 post '/message' do
   message = params[:message]
   from_port = params[:from_port]
-  $messages[from_port] = message
-  puts "#{PORT} received message #{message} from #{from_port}...".colorize(:blue)
+  set_in_messages(from_port, message)
+  puts "#{PORT} received message '#{message}' from #{from_port}...".colorize(:blue)
 end
 
 # @params messages
 post '/update_messages' do
-  messages = params[:messages]
-  update_messages(messages)
+  update_messages(params[:messages])
 end
 
 def gossip_to_peers(messages)
@@ -41,5 +40,14 @@ def update_messages(messages)
     $messages[k] = v
     puts '...Messages updated!'.colorize(:green)
   end
-  puts $messages.colorize(:magenta) if $messages != messages
+  puts $messages.to_json.colorize(:magenta) if $messages != messages
+end
+
+def set_in_messages(from_port, message)
+  if $messages.key?(from_port)
+    ident = $messages[from_port].size + 1
+    $messages[from_port] << { ident => message }
+  else
+    $messages[from_port] = [{ 1 => message }]
+  end
 end
