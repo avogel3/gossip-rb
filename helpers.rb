@@ -15,3 +15,7 @@ def gossip(from_port:, port:, message:)
   Faraday.post("http://localhost:#{port}/message", from_port: from_port, message: message).body
 rescue Faraday::ConnectionFailed
 end
+
+def timestamp
+  Time.now.to_i.to_s
+end
