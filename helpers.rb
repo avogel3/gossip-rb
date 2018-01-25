@@ -11,6 +11,7 @@ def every(seconds:)
   end
 end
 
-def gossip(port:, message:)
-  Faraday.post("http://localhost:#{port}/message", message: message)
+def gossip(from_port:, port:, message:)
+  Faraday.post("http://localhost:#{port}/message", from_port: from_port, message: message).body
+rescue Faraday::ConnectionFailed
 end

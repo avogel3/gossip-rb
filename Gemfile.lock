@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     coderay (1.1.2)
+    colorize (0.8.1)
     daemons (1.2.6)
     eventmachine (1.2.5)
     faraday (0.14.0)
@@ -30,6 +31,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  colorize
   faraday
   pry
   sinatra
