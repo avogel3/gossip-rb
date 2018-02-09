@@ -23,5 +23,6 @@ ruby client.rb 3000 4000 5000 6000 7000 # multiple peer ports
 
 
 ##### Andrew Vogel
+##### [Gossip Protocol Slides - Miniconf 2018](https://github.com/avogel3/gossip-rb/blob/master/doc/GossipProtocol.pdf)
 
 
