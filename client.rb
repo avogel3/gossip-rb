@@ -1,47 +1,38 @@
 require 'sinatra'
-require 'faraday'
 require 'colorize'
 require_relative 'helpers'
 
-PORT, PEER_PORT = ARGV.first(2)
+PORT, *PEER_PORTS = ARGV
 set :port, PORT
 
 $messages = {}
 
 every(seconds: 10) do
-  gossip_to_peers($messages)
+  peer_message_history = gossip_with_peers(PEER_PORTS.sample)
+  update_messages_history(peer_message_history)
 end
 
-# @params message
-# @params from_port
 post '/message' do
-  message = params[:message]
-  from_port = params[:from_port]
-  set_in_messages(from_port, message)
-  puts "#{PORT} received message '#{message}' from #{from_port}...".colorize(:blue)
+  receive_message(params[:message], params[:from_port])
 end
 
-# @params messages
-post '/update_messages' do
-  update_messages(params[:messages])
+get '/messages_history' do
+  JSON.dump($messages)
 end
 
-def gossip_to_peers(messages)
-  Faraday.post("http://localhost:#{PEER_PORT}/update_messages", from_port: PORT, messages: messages.to_json).body
-rescue Faraday::ConnectionFailed
+def receive_message(message, from_port)
+  return if message.nil? || message.empty?
+  $messages[timestamp] = message
+  puts "Received message '#{message}' from #{from_port}...".colorize(:blue)
 end
 
-def update_messages(messages)
-  puts 'Updating messages....'.colorize(:yellow)
+def update_messages_history(messages)
   parsed_messages = JSON.parse(messages)
   parsed_messages.each do |k, v|
     next if $messages.key?(k)
+    puts 'Updating message history....'.colorize(:yellow)
     $messages[k] = v
-    puts '...Messages updated!'.colorize(:green)
+    puts '...Message history updated!'.colorize(:green)
   end
-  puts $messages.to_json.colorize(:magenta) if $messages != messages
-end
-
-def set_in_messages(from_port, message)
-  $messages[timestamp] = { from_port: from_port, messsage: message }
+  puts JSON.dump($messages).colorize(:magenta) if $messages != messages
 end
